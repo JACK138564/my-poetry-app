@@ -1,3 +1,6 @@
 __pycache__/
 .vscode/
 .idea/
+.vercel
+works.npy
+authors.npy
