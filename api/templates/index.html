@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>古诗词文</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/icon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- 主应用容器，通过 data-view 属性控制当前显示的视图 -->
+    <div id="app-container" data-view="results">
+
+        <!-- ==================== 对应 tkinter 的 top_frame ==================== -->
+        <header class="top-bar">
+            <!-- 左侧：分页控制 -->
+            <div class="pagination-controls">
+                <button id="prev-page-btn" class="button" disabled>上一页</button>
+                <button id="page-indicator-btn" class="button button-page-indicator">搜索</button>
+                <button id="next-page-btn" class="button" disabled>下一页</button>
+            </div>
+
+            <!-- 中间：搜索核心区域 -->
+            <div class="search-main">
+                <input type="text" id="search-input" class="search-input-field" placeholder="搜索人物、作者、作品...">
+            </div>
+
+            <!-- 右侧：搜索类型选择 -->
+            <div class="search-type-controls">
+                <!-- 在网页中，使用一组按钮并用 JS 控制 active 状态是常见做法 -->
+                <button id="search-type-person" data-type="person" class="button search-type-btn">人物</button>
+                <button id="search-type-author" data-type="author" class="button search-type-btn">作者</button>
+                <button id="search-type-work" data-type="work" class="button search-type-btn active">作品</button>
+            </div>
+        </header>
+
+        <!-- ==================== 主内容区，包含结果列表和详情页 ==================== -->
+        <main class="main-content">
+
+            <!-- 视图1: 搜索结果列表 (对应 tkinter 的 show_frame) -->
+            <section id="results-view" class="view">
+                <div id="results-list" class="results-list-container">
+                    <!-- JavaScript 将在此处动态生成结果项 -->
+                    <!-- 示例结果项结构 (将被JS用作模板):
+                    <div class="result-item">
+                        <div class="result-item-content">
+                            <h3 class="item-title">示例标题</h3>
+                            <p class="item-author">[唐] 杜甫</p>
+                            <p class="item-snippet">国破山河在，城春草木深。感时花溅泪，恨别鸟惊心...</p>
+                        </div>
+                        <div class="result-item-actions">
+                            <button class="button button-details" data-id="work-123">详情</button>
+                        </div>
+                    </div>
+                    -->
+                </div>
+                <!-- 初始状态或无结果时显示的占位符 -->
+                <div id="placeholder" class="placeholder-text">
+                    <p>请输入关键词，开始您的诗词之旅...</p>
+                </div>
+                <!-- 加载动画 -->
+                <div id="loader" class="loader hidden"></div>
+            </section>
+
+            <!-- 视图2: 详情页面 (对应 tkinter 的 detailed_frame) -->
+            <section id="details-view" class="view hidden">
+                <!-- 顶部操作栏 -->
+                <div class="details-top-bar">
+                    <button id="back-to-list-btn" class="button"> ← 返回列表</button>
+                    <!-- 文章内搜索 (对应 article_search_frame) -->
+                    <div class="article-search-box">
+                        <input type="text" id="article-search-input" class="search-input-field-sm" placeholder="在正文中搜索...">
+                        <button id="article-search-btn" class="button button-sm">搜索</button>
+                    </div>
+                </div>
+
+                <!-- 详情内容布局 -->
+                <div class="details-layout-grid">
+                    <!-- 左侧：正文区域 (对应 detailed_text1) -->
+                    <div id="detail-content-panel" class="panel">
+                        <div id="detail-content" class="prose">
+                            <!-- 详细内容将由 JS 动态插入 -->
+                        </div>
+                    </div>
+
+                    <!-- 右侧：工具和辅助信息区域 (对应 dict_and_translation_frame) -->
+                    <div id="side-panel" class="panel">
+                        <!-- 字典查询工具 -->
+                        <div class="tool-section">
+                            <h4 class="tool-title">字典查询</h4>
+                            <div class="dict-tool-box">
+                                <input type="text" id="dict-input" class="search-input-field-sm" placeholder="输入单字或词语">
+                                <button id="dict-btn" class="button button-sm">查词</button>
+                            </div>
+                            <div id="dict-result" class="prose-sm tool-result">
+                                <!-- 字典查询结果将显示在这里 -->
+                            </div>
+                        </div>
+
+                        <!-- 译文、注释、评析 (对应 detailed_text2) -->
+                        <div class="tool-section">
+                            <h4 class="tool-title">译文与赏析</h4>
+                            <div id="detail-extras" class="prose-sm tool-result">
+                                <!-- 译文、注释等将显示在这里 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ==================== AI 解释模态框 (对应 Toplevel 弹窗) ==================== -->
+    <div id="ai-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h3 class="modal-title">AI 助手</h3>
+                <button class="modal-close-btn">×</button>
+            </header>
+            <main class="modal-body">
+                <div class="ai-section">
+                    <strong>请求内容:</strong>
+                    <p id="ai-prompt" class="prose-sm"></p>
+                </div>
+                <hr>
+                <div class="ai-section">
+                    <strong>智能解析:</strong>
+                    <div id="ai-explanation" class="prose-sm">
+                        <!-- AI 流式响应将在此处显示 -->
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ==================== JavaScript 文件链接 ==================== -->
+    <!-- JS 文件应在 body 结束前引入，以确保页面元素加载完毕 -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+</body>
+</html>
